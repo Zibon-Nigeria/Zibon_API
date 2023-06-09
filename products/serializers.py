@@ -24,7 +24,7 @@ class ProductListSerializers(serializers.ModelSerializer):
 class ProductDetailSerializers(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('id', 'name', 'short_description', 'long_description', 'image')
+        fields = ('id', 'name', 'category', 'short_description', 'long_description', 'image')
 
 # product image serializer
 class ProductImageSerializers(serializers.ModelSerializer):

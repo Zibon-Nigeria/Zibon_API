@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'djoser',
+    'rest_framework_swagger',
+    'coreapi', # Coreapi for coreapi documentation
+    'drf_yasg', #
 
     # apps
     'accounts',
@@ -53,6 +56,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 ]
 
+# APPEND_SLASH=False
 
 DJOSER = {
     'USER_MODEL': 'accounts.CustomUser',
@@ -73,6 +77,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+}
 
 ROOT_URLCONF = 'Zibon_API.urls'
 

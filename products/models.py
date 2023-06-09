@@ -2,6 +2,8 @@ from django.db import models
 from django.urls import reverse
 from django.template.defaultfilters import slugify
 
+from accounts.models import CustomUser
+
 # Create your models here.
 
 # category model
@@ -49,7 +51,7 @@ class ProductImage(models.Model):
 # product review model
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_review")
-    # user = models.ForeignKey(User, related_name="user")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user")
     rating = models.IntegerField()
     comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)

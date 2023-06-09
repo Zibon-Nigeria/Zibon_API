@@ -12,19 +12,13 @@ from .managers import CustomUserManager
 class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     account_options = (
-        ('Customer', 'is_customer'),
-        ('Shopper', 'is_shopper'),
-        ('Vendor', 'is_vendor'),
+        ('Customer', 'customer'),
+        ('Shopper', 'shopper'),
+        ('Vendor', 'vendor'),
     )
 
     account_type = models.CharField(_("Account type"), max_length=12, choices=account_options, default='Customer', help_text=_('account type'))
-    firstname = models.CharField(_("first name"), max_length=30)
-    lastname = models.CharField(_("last name"), max_length=30)
     email = models.EmailField(_("email address"), unique=True)
-    phone = models.CharField(_("phone number"), max_length=15, blank=True, null=True)
-    address = models.CharField(_("address"), max_length=255)
-    city = models.CharField(_("city"), max_length=30)
-    state = models.CharField(_("state"), max_length=30)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
@@ -44,6 +38,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    firstname = models.CharField(_("first name"), max_length=30)
+    lastname = models.CharField(_("last name"), max_length=30)
+    phone = models.CharField(_("phone number"), max_length=15, blank=True, null=True)
+    address = models.CharField(_("address"), max_length=255)
+    city = models.CharField(_("city"), max_length=30)
+    state = models.CharField(_("state"), max_length=30)
+    date_cerated = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return str(self.user) + ' customer profile'
@@ -52,17 +53,14 @@ class UserProfile(models.Model):
     @receiver(post_save, sender=CustomUser)
     def create_user_profile(sender, instance, created, **kwargs):
         if created:
-            if instance.account_type == 'Customer':
-                UserProfile.objects.create(user=instance)
-    
-    # save user profile
-    @receiver(post_save, sender=CustomUser)
-    def save_user_profile(sender, instance, **kwargs):
-        instance.userprofile.save()
+            UserProfile.objects.create(user=instance)
+            instance.userprofile.save()
+
         
 # shopper func
 class ShopperProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    
 
     def __str__(self):
         return str(self.user) + ' shopper profile'
@@ -73,9 +71,4 @@ class ShopperProfile(models.Model):
         if created:
             if instance.account_type == 'Shopper':
                 ShopperProfile.objects.create(user=instance)
-    
-    # save shopper profile
-    @receiver(post_save, sender=CustomUser)
-    def save_shopper_profile(sender, instance, **kwargs):
-        if instance.account_type == 'Shopper':
-            instance.shopperprofile.save()
+                instance.shopperprofile.save()
