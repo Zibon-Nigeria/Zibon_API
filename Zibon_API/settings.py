@@ -52,11 +52,7 @@ INSTALLED_APPS = [
     'stores',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:8000',
-    'http://localhost',
-]
+CORS_ORIGIN_ALLOW_ALL = True
 
 # APPEND_SLASH=False
 
