@@ -4,9 +4,11 @@ from . import views
 
 urlpatterns = [
     # all stores near me
-    path('', views.get_all_stores, name='stores'),
-    # get a single store
-    path('<id>', views.get_store, name='single-store'),
+    path('', views.nearby_stores, name='nearby-stores'),
+    # add product to store inventory
+    path('inventory', views.store_inventory, name='new-store-product'),
     # get single product from a store
-    path('item/<id>', views.get_store_product, name='store-product'),
+    path('inventory/<id>', views.store_inventory_products, name='store-product'),
+    # get a single store
+    path('<id>', views.store, name='single-store'),
 ]

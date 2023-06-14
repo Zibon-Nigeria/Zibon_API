@@ -9,7 +9,7 @@ class StoreSerializers(serializers.ModelSerializer):
         fields = ('id', 'store_name', 'store_address')
 
 # Store inventory list serializer
-class StoreInventoryListSerializers(serializers.ModelSerializer):
+class StoreInventorySerializers(serializers.ModelSerializer):
     class Meta:
         model = StoreInventory
-        fields = ('id', 'product', 'price')
+        fields = ('id', 'store', 'product', 'price', 'stock_qty')

@@ -3,28 +3,16 @@ from rest_framework import serializers
 from . models import Category, Product, ProductImage, Review
 
 # category list serializer
-class CategoryListSerializers(serializers.ModelSerializer):
+class CategorySerializers(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('slug', 'name', 'short_description', 'image')
-
-# single category serializer
-class CategoryDetailSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ('slug', 'name', 'short_description', 'image')
-
-# product list serializer
-class ProductListSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ('id', 'name', 'short_description', 'image')
+        fields = ('id', 'slug', 'name', 'short_description')
 
 # single product serializer
-class ProductDetailSerializers(serializers.ModelSerializer):
+class ProductSerializers(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('id', 'name', 'category', 'short_description', 'long_description', 'image')
+        fields = ('id', 'name', 'category', 'product_code', 'long_description', 'image')
 
 # product image serializer
 class ProductImageSerializers(serializers.ModelSerializer):

@@ -3,16 +3,16 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from products.serializers import ProductDetailSerializers, ProductImageSerializers, ProductListSerializers
+from products.serializers import ProductSerializers, ProductImageSerializers
 
-from .serializers import StoreSerializers, StoreInventoryListSerializers
+from .serializers import StoreSerializers, StoreInventorySerializers
 from .models import Store, StoreInventory
 
 # Create your views here.
 
 # get all stores
 @api_view(['GET'])
-def get_all_stores(request):
+def nearby_stores(request):
     stores = Store.objects.all()
     data = {}
 
@@ -27,8 +27,8 @@ def get_all_stores(request):
         data[f'{s}']['inventory'] = []
 
         for i in range(0, len(inventory)):
-            invetory_serializer = StoreInventoryListSerializers(inventory[i])
-            product_serializer = ProductListSerializers(inventory[i].product)
+            invetory_serializer = StoreInventorySerializers(inventory[i])
+            product_serializer = ProductSerializers(inventory[i].product)
           
             data[f'{s}']['inventory'].append({})
             data[f'{s}']['inventory'][i]['product'] = invetory_serializer.data
@@ -38,7 +38,7 @@ def get_all_stores(request):
 
 # get single stores
 @api_view(['GET'])
-def get_store(request, id):
+def store(request, id):
     store = Store.objects.get(id=id)
     inventory = store.store_inventory.all()
     data = {}
@@ -48,8 +48,8 @@ def get_store(request, id):
     data['inventory'] = []
 
     for i in range(0, len(inventory)):
-        invetory_serializer = StoreInventoryListSerializers(inventory[i])
-        product_serializer = ProductListSerializers(inventory[i].product)
+        invetory_serializer = StoreInventorySerializers(inventory[i])
+        product_serializer = ProductSerializers(inventory[i].product)
         
         data['inventory'].append({})
         data['inventory'][i]['product'] = invetory_serializer.data
@@ -59,12 +59,12 @@ def get_store(request, id):
 
 # get single store product
 @api_view(['GET'])
-def get_store_product(request, id):
+def store_inventory_products(request, id):
     inventory_product = StoreInventory.objects.get(id=id)
 
-    invetory_product_serializer = StoreInventoryListSerializers(inventory_product)
+    invetory_product_serializer = StoreInventorySerializers(inventory_product)
     store_serializer = StoreSerializers(inventory_product.store)
-    product_details_serializer = ProductDetailSerializers(inventory_product.product)
+    product_details_serializer = ProductSerializers(inventory_product.product)
     product_image_serializer = ProductImageSerializers(inventory_product.product.product_image.all(), many=True)
 
     data = {
@@ -75,3 +75,15 @@ def get_store_product(request, id):
     }
 
     return Response(data)
+
+
+@api_view(['POST'])
+def store_inventory(request):
+    if request.method == 'POST':
+        serializer = StoreInventorySerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    

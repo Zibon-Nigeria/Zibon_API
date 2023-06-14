@@ -11,7 +11,6 @@ class Category(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(blank=True, null=True)
     short_description = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to="categories/")
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, auto_now_add=False)
 
@@ -26,9 +25,9 @@ class Category(models.Model):
     
 # product model
 class Product(models.Model):
-    category = models.ManyToManyField(Category, related_name="category_product")
+    category = models.ManyToManyField(Category, related_name="category")
     name = models.CharField(max_length=255)
-    short_description = models.TextField(blank=True, null=True)
+    product_code = models.CharField(max_length=50)
     long_description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to="products/")
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
