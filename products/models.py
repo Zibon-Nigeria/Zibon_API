@@ -25,7 +25,7 @@ class Category(models.Model):
     
 # product model
 class Product(models.Model):
-    category = models.ManyToManyField(Category, related_name="category")
+    category = models.ManyToManyField(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     product_code = models.CharField(max_length=50)
     long_description = models.TextField(blank=True, null=True)

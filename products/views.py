@@ -28,7 +28,7 @@ def categories(request):
 def get_category(request, slug):
     category = Category.objects.get(slug=slug)
     category_serializer = CategorySerializers(category)
-    product_serializer = ProductSerializers(category.category_product.all(), many=True)
+    product_serializer = ProductSerializers(category.product.all(), many=True)
     data = {
         'category': category_serializer.data,
         'products': product_serializer.data,
