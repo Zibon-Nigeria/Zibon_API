@@ -8,7 +8,7 @@ urlpatterns = [
     # add product to store inventory
     path('inventory', views.store_inventory, name='new-store-product'),
     # get single product from a store
-    path('inventory/<id>', views.store_inventory_products, name='store-product'),
+    path('inventory/<id>', views.store_product, name='store-product'),
     # get a single store
     path('<id>', views.store, name='single-store'),
 ]

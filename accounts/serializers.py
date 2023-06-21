@@ -13,7 +13,10 @@ class CustomUserSerializer(UserSerializer):
         fields = ('id', 'email')
 
 # Store serializer
-class StoreSerializers(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
+    owner = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
     class Meta:
         model = UserProfile
-        fields = ('id', 'firstname', 'lastname', 'address', 'city', 'state')
+        fields = ('firstname', 'lastname', 'phone', 'address', 'city', 'state')

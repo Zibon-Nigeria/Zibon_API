@@ -4,6 +4,10 @@ from . models import Store, StoreInventory
 
 # Store serializer
 class StoreSerializers(serializers.ModelSerializer):
+    owner = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+    
     class Meta:
         model = Store
         fields = ('id', 'store_name', 'store_address')

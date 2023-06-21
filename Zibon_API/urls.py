@@ -45,6 +45,7 @@ urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
 
     # apps
+    # path('user/', include('accounts.urls')),
     path('products/', include('products.urls')),
     path('stores/', include('stores.urls')),
     # path('docs/', include_docs_urls(title='Todo Api')),

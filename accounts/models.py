@@ -37,7 +37,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    owner = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     firstname = models.CharField(_("first name"), max_length=30)
     lastname = models.CharField(_("last name"), max_length=30)
     phone = models.CharField(_("phone number"), max_length=15, blank=True, null=True)
