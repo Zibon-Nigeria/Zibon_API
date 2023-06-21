@@ -27,8 +27,10 @@ def categories(request):
 @api_view(['GET'])
 def get_category(request, slug):
     category = Category.objects.get(slug=slug)
+    category_products = Product.objects.filter(category=category)
+
     category_serializer = CategorySerializers(category)
-    product_serializer = ProductSerializers(category.product.all(), many=True)
+    product_serializer = ProductSerializers(category_products, many=True)
     data = {
         'category': category_serializer.data,
         'products': product_serializer.data,
