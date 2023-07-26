@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
-class IsOwner(permissions.BasePermission):
-    message = "Unauthorized Access! Not The Owner"
+class IsStoreOwner(permissions.BasePermission):
+    message = "Unauthorized Access! You Are Not The Owner Of This Store"
 
     def has_object_permission(self, request, view, obj):
         if request.Method in permissions.SAFE_METHODS:

@@ -32,18 +32,14 @@ class Store(models.Model):
 class StoreInventory(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='store_inventory')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='store_product')
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    cost_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    retail_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     stock_qty = models.IntegerField(default=1)
-    in_stock = models.BooleanField(default=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['product', 'store'], name='follow once')
         ]
-    
-    def set_stock(self):
-        self.in_stock = self.stock_qty
-        self.save()
         
     def __str__(self):
         return str(self.product) + " from " + str(self.store)
