@@ -20,6 +20,7 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from rest_framework_simplejwt import views as jwt
 
 from django.conf.urls.static import static
 from django.conf import settings
@@ -41,13 +42,17 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # authentication routes
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.authtoken')),
+    # path('auth/', include('djoser.urls')),
+    # path('auth/', include('djoser.urls.authtoken')),
+     path('api/login/', jwt.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/login/refresh/', jwt.TokenRefreshView.as_view(), name='token_refresh'),
 
     # apps
     # path('user/', include('accounts.urls')),
-    path('products/', include('products.urls')),
-    path('stores/', include('stores.urls')),
+    path('api/products/', include('products.urls')),
+    path('api/customer/', include('customer.urls')),
+    path('api/shopper/', include('shopper.urls')),
+    path('api/stores/', include('stores.urls')),
     # path('docs/', include_docs_urls(title='Todo Api')),
     # urls(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

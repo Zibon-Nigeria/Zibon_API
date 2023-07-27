@@ -11,13 +11,13 @@ from .managers import CustomUserManager
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
 
-    account_options = (
+    account_type = (
         ('Customer', 'customer'),
         ('Shopper', 'shopper'),
         ('Vendor', 'vendor'),
     )
 
-    account_type = models.CharField(_("Account type"), max_length=12, choices=account_options, default='Customer', help_text=_('account type'))
+    account_type = models.CharField(_("Account type"), max_length=12, choices=account_type, default='Customer', help_text=_('account type'))
     email = models.EmailField(_("email address"), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -44,10 +44,10 @@ class UserProfile(models.Model):
     address = models.CharField(_("address"), max_length=255)
     city = models.CharField(_("city"), max_length=30)
     state = models.CharField(_("state"), max_length=30)
-    date_cerated = models.DateTimeField(default=timezone.now)
+    date_created = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return str(self.user) + ' customer profile'
+        return f'{self.firstname} {self.lastname}'
     
     # create user profile after user has been created
     @receiver(post_save, sender=CustomUser)
@@ -55,20 +55,3 @@ class UserProfile(models.Model):
         if created:
             UserProfile.objects.create(user=instance)
             instance.userprofile.save()
-
-        
-# shopper func
-class ShopperProfile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    
-
-    def __str__(self):
-        return str(self.user) + ' shopper profile'
-    
-    # create shopper profile after user has been created
-    @receiver(post_save, sender=CustomUser)
-    def create_shopper_profile(sender, instance, created, **kwargs):
-        if created:
-            if instance.account_type == 'Shopper':
-                ShopperProfile.objects.create(user=instance)
-                instance.shopperprofile.save()
