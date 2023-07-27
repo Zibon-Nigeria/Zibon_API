@@ -44,11 +44,12 @@ urlpatterns = [
     # authentication routes
     # path('auth/', include('djoser.urls')),
     # path('auth/', include('djoser.urls.authtoken')),
-     path('api/login/', jwt.TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/login/refresh/', jwt.TokenRefreshView.as_view(), name='token_refresh'),
+     path('api/auth/login/', jwt.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/login/refresh/', jwt.TokenRefreshView.as_view(), name='token_refresh'),
 
     # apps
     # path('user/', include('accounts.urls')),
+    path('api/auth/', include('accounts.urls')),
     path('api/products/', include('products.urls')),
     path('api/customer/', include('customer.urls')),
     path('api/shopper/', include('shopper.urls')),

@@ -1,27 +1,19 @@
-# from django.shortcuts import render
-# from djoser.views import UserViewSet
-import profile
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated  
+from drf_yasg.utils import swagger_auto_schema
 
-from accounts.serializers import UserProfileSerializer
+from accounts.serializers import UserProfileSerializer, UserSerializer
 
-# from .models import CustomUser
-# from .serializers import CustomUserCreateSerializer, CustomUserSerializer
-
-# # Create your views here.
-
-# class CustomUserViewSet(UserViewSet):
-#     serializer_class = CustomUserSerializer
-#     queryset = CustomUser.objects.all()
-    
-# class CustomUserCreateView(UserCreateView):
-#     serializer_class = CustomUserCreateSerializer
-    
-# class CustomTokenCreateView(TokenCreateView):
-#     pass
+@swagger_auto_schema(method='POST', request_body=UserSerializer)
+@api_view(['POST'])
+def register_user(request):
+    user_serializer = UserSerializer(data=request.data)
+    if user_serializer.is_valid(raise_exception=True):
+        user_serializer.save()
+        return Response(user_serializer.data, status=status.HTTP_201_CREATED)
+    return Response(user_serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET, PUT'])
