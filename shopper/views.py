@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 
 from shopper.models import BankInfo, Delivery, ShopperPersonalInfo, ShopperProfile
-from shopper.serializers import DeliverySerializer, ShopperPersonalInfoSerializer
+from shopper.serializers import BankInfoSerializer, DeliverySerializer, ShopperPersonalInfoSerializer
 
 # Create your views here.
 @api_view(['GET'])
@@ -69,6 +69,7 @@ def shopper_personal_info(request):
         return Response(shopper_info_serializer.data, status=status.HTTP_200_OK)
     
 
+@swagger_auto_schema(method='POST', request_body=BankInfoSerializer)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def bank_info(request):

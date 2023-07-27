@@ -16,7 +16,7 @@ def register_user(request):
     return Response(user_serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET, PUT'])
+@api_view(['GET', 'PUT'])
 # @permission_classes([IsAuthenticated])
 def my_profile(request):
     if request.method == 'PUT':
