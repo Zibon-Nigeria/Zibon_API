@@ -45,7 +45,7 @@ def delivery(request, id):
             return Response(deliveries_serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
-@swagger_auto_schema(method='POST', request_body=ShopperPersonalInfo)
+@swagger_auto_schema(method='POST', request_body=ShopperPersonalInfoSerializer)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def shopper_personal_info(request):
