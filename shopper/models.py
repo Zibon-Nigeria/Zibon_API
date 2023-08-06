@@ -29,13 +29,20 @@ class ShopperProfile(models.Model):
 
 
 class ShopperPersonalInfo(models.Model):
+    driving_skills = [
+        ("None", "I don't know how to drive"),
+        ("Learner", "I'm currently learning how to drive"),
+        ('Intermediate', 'I have intermediate skills'),
+        ( 'Expert',  'I am an expert driver'),
+    ]
+
     shopper = models.OneToOneField(ShopperProfile, on_delete=models.CASCADE, related_name='personalinfo')
     date_of_birth = models.DateField(auto_now=False, auto_now_add=False)
     state_of_origin = models.CharField(max_length=50)
     lga = models.CharField(max_length=50)
     address = models.CharField(max_length=50)
     criminal_record = models.BooleanField()
-    driving_skill = models.PositiveIntegerField(help_text='How would you rate your driving?', blank=True, null=True)
+    driving_skill = models.CharField(choices=driving_skills, max_length=100, help_text='How would you rate your driving?', blank=True, null=True)
     id_document = models.FileField(upload_to='shopper/id_documents/', max_length=100)
     picture = models.FileField(upload_to='shopper/pictures', max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
