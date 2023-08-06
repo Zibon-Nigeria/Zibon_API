@@ -15,7 +15,7 @@ from stores.models import StoreInventory
 @swagger_auto_schema(method='POST', request_body=OrderPostSerializer)
 @api_view(['POST'])
 def make_order(request):
-    user = CustomUser.objects.get(id=1)
+    user = request.user
     items = request.data['items']
 
     # create order object

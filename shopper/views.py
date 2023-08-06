@@ -67,7 +67,7 @@ def available_deliveries(request):
 @api_view(['GET', 'PUT'])
 # @permission_classes([IsAuthenticated])
 def delivery(request, id):
-    user = CustomUser.objects.get(id=1)
+    user = request.user
 
     try:
         delivery = Delivery.objects.get(id=id)
@@ -98,7 +98,7 @@ def delivery(request, id):
 # view history of previous deliveries made
 @api_view(['GET'])
 def delivery_history(request):
-    user = CustomUser.objects.get(id=1)
+    user = request.user
     deliveries_history = Delivery.objects.filter(shopper=user)
     serializer = DeliverySerializer(deliveries_history, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
