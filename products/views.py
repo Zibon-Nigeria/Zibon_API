@@ -1,13 +1,16 @@
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from drf_yasg.utils import swagger_auto_schema
 
 from .serializers import CategorySerializers, ProductSerializers, ProductImageSerializers, ReviewListSerializers
 from .models import Category, Product
 
 # Create your views here.
 # get all categories
+@swagger_auto_schema(method='POST', request_body=CategorySerializers)
 @api_view(['GET', 'POST'])
 def categories(request):
     if request.method == 'GET':
@@ -39,6 +42,7 @@ def get_category(request, slug):
 
 
 # get all categories
+@swagger_auto_schema(method='POST', request_body=ProductSerializers)
 @api_view(['GET', 'POST'])
 def products(request):
     if request.method == 'GET':

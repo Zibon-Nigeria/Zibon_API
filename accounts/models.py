@@ -2,15 +2,11 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.urls import reverse 
 from django.dispatch import receiver
-from django.db.models.signals import post_save
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-
 from .managers import CustomUserManager
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-
     account_type = (
         ('Customer', 'customer'),
         ('Shopper', 'shopper'),
@@ -19,9 +15,18 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     account_type = models.CharField(_("Account type"), max_length=12, choices=account_type, default='Customer', help_text=_('account type'))
     email = models.EmailField(_("email address"), unique=True)
+    fullname = models.CharField(_("first name"), max_length=30)
+    phone = models.CharField(_("phone number"), max_length=15, blank=True, null=True)
+    address = models.CharField(_("address"), max_length=255, blank=True, null=True)
+    city = models.CharField(_("city"), max_length=30, blank=True, null=True)
+    state = models.CharField(_("state"), max_length=30, blank=True, null=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     USERNAME_FIELD = "email"
     # REQUIRED_FIELDS = ['firstname', 'lastname', 'address', 'city', 'state']
@@ -32,26 +37,3 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
     
-    # def get_absolute_url(self):
-    #     return reverse('profile', kwargs={'username': self.username})
-
-
-class UserProfile(models.Model):
-    owner = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    firstname = models.CharField(_("first name"), max_length=30)
-    lastname = models.CharField(_("last name"), max_length=30)
-    phone = models.CharField(_("phone number"), max_length=15, blank=True, null=True)
-    address = models.CharField(_("address"), max_length=255)
-    city = models.CharField(_("city"), max_length=30)
-    state = models.CharField(_("state"), max_length=30)
-    date_created = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return f'{self.firstname} {self.lastname}'
-    
-    # create user profile after user has been created
-    @receiver(post_save, sender=CustomUser)
-    def create_user_profile(sender, instance, created, **kwargs):
-        if created:
-            UserProfile.objects.create(user=instance)
-            instance.userprofile.save()

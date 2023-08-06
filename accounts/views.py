@@ -3,8 +3,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated  
 from drf_yasg.utils import swagger_auto_schema
+from accounts.models import CustomUser
 
-from accounts.serializers import UserProfileSerializer, UserSerializer
+from accounts.serializers import UserSerializer
 
 @swagger_auto_schema(method='POST', request_body=UserSerializer)
 @api_view(['POST'])
@@ -19,8 +20,14 @@ def register_user(request):
 @api_view(['GET', 'PUT'])
 # @permission_classes([IsAuthenticated])
 def my_profile(request):
+    user = CustomUser.objects.get(id=2)
+
+    if request.method == 'GET':
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+    
     if request.method == 'PUT':
-        serializer = UserProfileSerializer(data=request.data)
+        serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)

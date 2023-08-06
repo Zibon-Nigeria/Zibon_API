@@ -1,25 +1,14 @@
 from rest_framework import serializers
 
-from shopper.models import BankInfo, Delivery, ShopperPersonalInfo, ShopperProfile
+from shopper.models import BankInfo, ShopperPersonalInfo, ShopperProfile
 
 class ShopperProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopperProfile
         fields = '__all__'
-        read_only_fields = ['balance']
-
-
-class DeliverySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Delivery
-        fields = '__all__'
-        read_only_fields = ['shopper', 'order', 'destination']
-        # extra_kwargs = {
-        #     'shopper': {'read_only': True},
-        #     'order': {'read_only': True},
-        #     'destination': {'read_only': True}
-        # }
-
+        read_only_fields = ['user', 'balance']
+        depth = 1
+        
 
 class ShopperPersonalInfoSerializer(serializers.ModelSerializer):
     class Meta:

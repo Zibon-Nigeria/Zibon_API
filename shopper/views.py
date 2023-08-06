@@ -4,11 +4,16 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated  
 from drf_yasg.utils import swagger_auto_schema
+from yaml import serialize
+from accounts.models import CustomUser
+from order.models import Delivery
+from order.serializers import DeliverySerializer
 
-from shopper.models import BankInfo, Delivery, ShopperPersonalInfo, ShopperProfile
-from shopper.serializers import BankInfoSerializer, DeliverySerializer, ShopperPersonalInfoSerializer
+from shopper.models import BankInfo, ShopperPersonalInfo, ShopperProfile
+from shopper.serializers import BankInfoSerializer, ShopperPersonalInfoSerializer
 
 # Create your views here.
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard(request):
@@ -17,32 +22,13 @@ def dashboard(request):
     except ShopperPersonalInfo.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    deliveries_serializer = DeliverySerializer(shopper.deliveries.all(), many=True)
+    deliveries_serializer = DeliverySerializer(shopper.delivery.all(), many=True)
     shopper_serializer = ShopperPersonalInfoSerializer(shopper)
 
     return Response({
             'shopper': shopper_serializer.data,
             'deliveries': deliveries_serializer.data
         }, status=status.HTTP_200_OK)
-
-
-@api_view(['GET', 'PUT'])
-@permission_classes([IsAuthenticated])
-def delivery(request, id):
-    try:
-        delivery = Delivery.objects.get(id=id)
-    except Delivery.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    if request.method == "GET":
-        deliveries_serializer = DeliverySerializer(delivery)
-        return Response(deliveries_serializer.data, status=status.HTTP_200_OK)
-
-    if request.method == "PUT":
-        deliveries_serializer = DeliverySerializer(data=request.data)
-        if deliveries_serializer.is_valid():
-            deliveries_serializer.save()
-            return Response(deliveries_serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
 @swagger_auto_schema(method='POST', request_body=ShopperPersonalInfoSerializer)
@@ -69,9 +55,70 @@ def shopper_personal_info(request):
         return Response(shopper_info_serializer.data, status=status.HTTP_200_OK)
     
 
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def available_deliveries(request):
+    deliveries = Delivery.objects.filter(delivery_status='Available')
+    serializer = DeliverySerializer(deliveries, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'PUT'])
+# @permission_classes([IsAuthenticated])
+def delivery(request, id):
+    user = CustomUser.objects.get(id=1)
+
+    try:
+        delivery = Delivery.objects.get(id=id)
+    except Delivery.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "GET":
+        serializer = DeliverySerializer(delivery)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    elif request.method == "PUT":        
+        if delivery.delivery_status != "Available":
+            return Response({
+                'message': "This order has already been taken or delivered by another shopper"
+            }, status=status.HTTP_410_GONE)
+        
+        delivery.shopper = user;
+        delivery.delivery_status = 'Pending'
+        delivery.save()
+
+        serializer = DeliverySerializer(delivery)
+        return Response({
+            'message': "You have accepted to carryout this delivery",
+            'delivery': serializer.data
+        }, status=status.HTTP_202_ACCEPTED)
+
+
+# view history of previous deliveries made
+@api_view(['GET'])
+def delivery_history(request):
+    user = CustomUser.objects.get(id=1)
+    deliveries_history = Delivery.objects.filter(shopper=user)
+    serializer = DeliverySerializer(deliveries_history, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# view details of previous delivery
+@api_view(['GET'])
+def delivery_history_detail(request, id):
+    try:
+        delivery = Delivery.objects.get(id=id)
+    except Delivery.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    serializer = DeliverySerializer(delivery)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 @swagger_auto_schema(method='POST', request_body=BankInfoSerializer)
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def bank_info(request):
     data = request.data
     data['shopper'] = request.user.shopper_profile

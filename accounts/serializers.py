@@ -1,6 +1,6 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from .models import CustomUser, UserProfile
+from .models import CustomUser
 
 
 # user serializer
@@ -21,28 +21,3 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
-
-# Store serializer
-class UserProfileSerializer(serializers.ModelSerializer):
-    owner = serializers.HiddenField(
-        default=serializers.CurrentUserDefault()
-    )
-    class Meta:
-        model = UserProfile
-        fields = ('firstname', 'lastname', 'phone', 'address', 'city', 'state')
-
-
-
-class CustomUserCreateSerializer(UserCreateSerializer):
-    class Meta(UserCreateSerializer.Meta):
-        model = CustomUser
-        fields = ['id', 'email', 'password', 'account_type']
-        extra_kwargs = {
-                    'password': {'write_only': True}
-                }
-        
-class CustomUserSerializer(UserSerializer):
-    class Meta(UserSerializer.Meta):
-        model = CustomUser
-        fields = ('id', 'email')
