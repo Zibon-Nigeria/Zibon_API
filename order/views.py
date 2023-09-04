@@ -4,23 +4,25 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
-from accounts.models import CustomUser
+from accounts.models import User
 from order.models import Delivery, Order, OrderItem
 
 from order.serializers import DeliverySerializer, OrderPostSerializer, OrderSerializer, RequestDeliverySerializer
-from stores.models import StoreInventory
+from stores.models import Store, StoreInventory
 
 
 # Create your views here.
 @swagger_auto_schema(method='POST', request_body=OrderPostSerializer)
 @api_view(['POST'])
-def make_order(request):
+def make_order(request, store_id):
     user = request.user
+    store = Store.objects.get(id=store_id)
     items = request.data['items']
 
     # create order object
     order = Order(
         customer=user,
+        store=store,
         total=0
     )
     order.save()

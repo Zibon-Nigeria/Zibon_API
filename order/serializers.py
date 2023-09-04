@@ -7,10 +7,11 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model =  Order
         fields = '__all__'
-        read_only_fields = ['order_number']
+        read_only_fields = ['order_number', 'customer', 'order_number', 'store']
         extra_kwargs = {
             'item': {'help_text': "ID of StoreItem"}
         }
+        depth = 1
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -24,6 +25,23 @@ class OrderItemSerializer(serializers.ModelSerializer):
         }
 
 
+class OrderPostSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+    class Meta:
+        model =  Order
+        fields = '__all__'
+        read_only_fields = ['customer', 'order_number', 'store']
+        extra_kwargs = {
+            'items': {'help_text': "Array of order items"}
+        }
+
+
+class UpdateOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =  Order
+        fields = ["has_been_picked_up"]
+
+
 class DeliverySerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
@@ -32,17 +50,6 @@ class DeliverySerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'shopper': {'help_text': "User id of shopper"},
             'order': {'help_text': "Id of order"}
-        }
-
-
-class OrderPostSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True)
-    class Meta:
-        model =  Order
-        fields = '__all__'
-        read_only_fields = ['order_number']
-        extra_kwargs = {
-            'items': {'help_text': "Array of order items"}
         }
 
 

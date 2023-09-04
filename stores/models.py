@@ -2,13 +2,13 @@ from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 
-from accounts.models import CustomUser
+from accounts.models import User
 from products.models import Product
 
 # Create your models here.
 
 class Store(models.Model):
-    owner = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE)
     store_name = models.CharField(max_length=50, blank=True, null=True)
     store_address = models.CharField(max_length=200, blank=True, null=True)
     city = models.CharField(max_length=30, blank=True, null=True)
@@ -26,7 +26,7 @@ class Store(models.Model):
     
 
     # create shopper profile after user has been created
-    @receiver(post_save, sender=CustomUser)
+    @receiver(post_save, sender=User)
     def create_shopper_profile(sender, instance, created, **kwargs):
         if created:
             if instance.account_type == 'Vendor':

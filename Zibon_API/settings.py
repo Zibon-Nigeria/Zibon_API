@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,13 +43,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    # 'rest_framework.authtoken',
+    
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    # 'rest_framework_simplejwt.token_blacklist',
+
     'corsheaders',
-    'djoser',
+    # 'djoser',
     'rest_framework_swagger',
-    'coreapi', # Coreapi for coreapi documentation
-    'drf_yasg', #
+    'coreapi',
+    'drf_yasg',
 
     # apps
     'accounts',
@@ -59,14 +66,14 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # APPEND_SLASH=False
 
-DJOSER = {
-    'USER_MODEL': 'accounts.CustomUser',
-    'SERIALIZERS': {
-        'user_create': 'accounts.serializers.CustomUserCreateSerializer',
-        'user': 'accounts.serializers.CustomUserSerializer',
-    }
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
+    "TOKEN_OBTAIN_SERIALIZER": "accounts.serializers.MyTokenObtainPairSerializer",
+    'ROTATE_REFRESH_TOKEN': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
 }
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -81,7 +88,6 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.TokenAuthentication'
         'rest_framework_simplejwt.authentication.JWTAuthentication'
     ],
     # 'DEFAULT_PERMISSION_CLASSES': [
@@ -136,7 +142,7 @@ DATABASES = {
 }
 
 # set custom user as default user
-AUTH_USER_MODEL = "accounts.CustomUser"
+AUTH_USER_MODEL = "accounts.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -172,7 +178,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

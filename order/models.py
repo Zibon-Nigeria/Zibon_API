@@ -1,15 +1,16 @@
 from django.utils import timezone
 from django.db import models
-from accounts.models import CustomUser
-from stores.models import StoreInventory
+from accounts.models import User
+from stores.models import Store, StoreInventory
 
 
 # Create your models here.
 class Order(models.Model):
-    customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True)
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, blank=True)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=True)
     order_number = models.CharField(max_length=50, blank=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    has_been_released = models.BooleanField(default=False)
+    has_been_picked_up = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -55,7 +56,7 @@ class Delivery(models.Model):
         ('Cancelled', 'Cancelled')
     ]
 
-    shopper = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
+    shopper = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     destination_address = models.CharField(max_length=50)
     delivery_status = models.CharField(max_length=50, choices=delivery_status, default='Available')

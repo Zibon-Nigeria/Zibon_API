@@ -44,15 +44,15 @@ urlpatterns = [
     # authentication routes
     # path('auth/', include('djoser.urls')),
     # path('auth/', include('djoser.urls.authtoken')),
-     path('api/auth/login/', jwt.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/login/', jwt.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/login/refresh/', jwt.TokenRefreshView.as_view(), name='token_refresh'),
 
     # apps
     # path('user/', include('accounts.urls')),
     path('api/auth/', include('accounts.urls')),
     path('api/products/', include('products.urls')),
-    path('api/', include('order.urls')),
-    path('api/', include('shopper.urls')),
+    path('api/orders/', include('order.urls')),
+    path('api/shopper/', include('shopper.urls')),
     path('api/stores/', include('stores.urls')),
     # path('docs/', include_docs_urls(title='Todo Api')),
     # urls(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),

@@ -6,7 +6,8 @@ from . models import Store, StoreInventory
 class StoreSerializers(serializers.ModelSerializer):
     class Meta:
         model = Store
-        exclude = ['owner', 'balance']
+        fields = '__all__'
+        read_only_fields = ['owner', 'balance']
         extra_kwargs = {
             'store_name': {'help_text': 'Business/Store name'},
             'store_address': {'help_text': 'Store street address'},
@@ -18,11 +19,11 @@ class StoreInventorySerializers(serializers.ModelSerializer):
     class Meta:
         model = StoreInventory
         exclude = ['cost_price']
-        depth = 1
         extra_kwargs = {
             'product': {'help_text': 'Product ID'},
             # Add other fields with their descriptions
         }
+        depth = 1
 
 class MyStoreSerializers(serializers.ModelSerializer):
     def has_object_permission(self, request, obj):

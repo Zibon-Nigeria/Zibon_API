@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from .managers import CustomUserManager
 
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin):
     account_type = (
         ('Customer', 'customer'),
         ('Shopper', 'shopper'),

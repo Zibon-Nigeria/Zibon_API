@@ -11,6 +11,8 @@ class ShopperProfileSerializer(serializers.ModelSerializer):
         
 
 class ShopperPersonalInfoSerializer(serializers.ModelSerializer):
+    id_document = serializers.FileField(max_length=None, use_url=True)
+    picture = serializers.ImageField(max_length=None, use_url=True)
     class Meta:
         model = ShopperPersonalInfo
         fields = '__all__'
@@ -20,4 +22,3 @@ class BankInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankInfo
         fields = '__all__'
-        read_only_fields = ['shopper']

@@ -1,11 +1,10 @@
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated  
 from drf_yasg.utils import swagger_auto_schema
-from yaml import serialize
-from accounts.models import CustomUser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from order.models import Delivery
 from order.serializers import DeliverySerializer
 
@@ -34,9 +33,10 @@ def dashboard(request):
 @swagger_auto_schema(method='POST', request_body=ShopperPersonalInfoSerializer)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([JSONParser, MultiPartParser, FormParser])
 def shopper_personal_info(request):
     data = request.data
-    data['shopper'] = request.user.shopper_profile
+    data['shopper'] = request.user.shopper_profile.id
 
     if request.method == 'POST':
         personal_info_serializer = ShopperPersonalInfoSerializer(data=data)
@@ -55,9 +55,8 @@ def shopper_personal_info(request):
         return Response(shopper_info_serializer.data, status=status.HTTP_200_OK)
     
 
-
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def available_deliveries(request):
     deliveries = Delivery.objects.filter(delivery_status='Available')
     serializer = DeliverySerializer(deliveries, many=True)
@@ -65,7 +64,7 @@ def available_deliveries(request):
 
 
 @api_view(['GET', 'PUT'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def delivery(request, id):
     user = request.user
 
@@ -84,7 +83,7 @@ def delivery(request, id):
                 'message': "This order has already been taken or delivered by another shopper"
             }, status=status.HTTP_410_GONE)
         
-        delivery.shopper = user;
+        delivery.shopper = user
         delivery.delivery_status = 'Pending'
         delivery.save()
 
@@ -97,6 +96,7 @@ def delivery(request, id):
 
 # view history of previous deliveries made
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def delivery_history(request):
     user = request.user
     deliveries_history = Delivery.objects.filter(shopper=user)
@@ -106,6 +106,7 @@ def delivery_history(request):
 
 # view details of previous delivery
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def delivery_history_detail(request, id):
     try:
         delivery = Delivery.objects.get(id=id)
@@ -118,10 +119,10 @@ def delivery_history_detail(request, id):
 
 @swagger_auto_schema(method='POST', request_body=BankInfoSerializer)
 @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def bank_info(request):
     data = request.data
-    data['shopper'] = request.user.shopper_profile
+    data['shopper'] = request.user.shopper_profile.id
 
     try:
         bank_info = BankInfo.objects.filter(shopper=request.user.shopper_profile)
@@ -140,7 +141,6 @@ def bank_info(request):
         return Response(info_serializer._errors, status=status.HTTP_400_BAD_REQUEST)
             
 
-
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
 def bank(request, id):
@@ -154,7 +154,7 @@ def bank(request, id):
         return Response(info_serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == "PUT":
-        info_serializer = BankInfo(data=request.data)
+        info_serializer = BankInfo(bank_info, data=request.data)
         if info_serializer.is_valid():
             info_serializer.save()
             return Response(info_serializer.data, status=status.HTTP_201_CREATED)
