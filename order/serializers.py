@@ -6,12 +6,12 @@ from .models import Delivery, Order, OrderItem
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model =  Order
-        fields = '__all__'
-        read_only_fields = ['order_number', 'customer', 'order_number', 'store']
+        fields = ['order_number', 'customer', 'total', 'qr_code', 'created_at', 'updated_at']
+        # read_only_fields = ['order_number', 'customer', 'qr_code']
         extra_kwargs = {
             'item': {'help_text': "ID of StoreItem"}
         }
-        depth = 1
+        # depth = 1
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -25,28 +25,34 @@ class OrderItemSerializer(serializers.ModelSerializer):
         }
 
 
-class OrderPostSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True)
+class ViewOrderItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model =  Order
+        model =  OrderItem
         fields = '__all__'
-        read_only_fields = ['customer', 'order_number', 'store']
-        extra_kwargs = {
-            'items': {'help_text': "Array of order items"}
-        }
+        depth = 1
 
 
-class UpdateOrderSerializer(serializers.ModelSerializer):
+class UpdateOrderItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model =  Order
-        fields = ["has_been_picked_up"]
+        model =  OrderItem
+        fields = ['has_been_picked_up']
+        
+
+class PostOrderSerializer(serializers.Serializer):
+    items = OrderItemSerializer(many=True)
+
+
+# class UpdateOrderSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model =  Order
+#         fields = ["has_been_picked_up"]
 
 
 class DeliverySerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
         fields = '__all__'
-        read_only_fields = ['order', 'destination_address']
+        read_only_fields = ['order', 'delivery_address']
         extra_kwargs = {
             'shopper': {'help_text': "User id of shopper"},
             'order': {'help_text': "Id of order"}
@@ -56,7 +62,17 @@ class DeliverySerializer(serializers.ModelSerializer):
 class RequestDeliverySerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
-        fields = ['order', 'destination_address']
+        fields = ['order', 'delivery_address']
+        extra_kwargs = {
+            'order': {'help_text': "ID of Order object"},
+            'destination_address': {'help_text': "address of where oreder should be delivered"},
+        }
+
+
+class AcceptDeliverySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Delivery
+        fields = ['shopper']
         extra_kwargs = {
             'order': {'help_text': "ID of Order object"},
             'destination_address': {'help_text': "address of where oreder should be delivered"},

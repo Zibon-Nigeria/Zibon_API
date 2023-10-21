@@ -9,8 +9,7 @@ from .managers import CustomUserManager
 class User(AbstractBaseUser, PermissionsMixin):
     account_type = (
         ('Customer', 'customer'),
-        ('Shopper', 'shopper'),
-        ('Vendor', 'vendor'),
+        ('Shopper', 'shopper')
     )
 
     account_type = models.CharField(_("Account type"), max_length=12, choices=account_type, default='Customer', help_text=_('account type'))
