@@ -41,12 +41,6 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # authentication routes
-    # path('auth/', include('djoser.urls')),
-    # path('auth/', include('djoser.urls.authtoken')),
-    path('api/auth/login/', jwt.TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/login/refresh/', jwt.TokenRefreshView.as_view(), name='token_refresh'),
-
     # apps
     # path('user/', include('accounts.urls')),
     path('api/auth/', include('accounts.urls')),
@@ -54,6 +48,13 @@ urlpatterns = [
     path('api/orders/', include('order.urls')),
     path('api/shopper/', include('shopper.urls')),
     path('api/stores/', include('stores.urls')),
+
+    # authentication routes
+    path('api/auth/login/', jwt.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/login/refresh/', jwt.TokenRefreshView.as_view(), name='token_refresh'),
+    # path('auth/', include('djoser.urls')),
+    # path('auth/', include('djoser.urls.authtoken')),
+    
     # path('docs/', include_docs_urls(title='Todo Api')),
     # urls(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

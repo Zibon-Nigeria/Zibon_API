@@ -24,10 +24,12 @@ packaging==23.1
 Pillow==10.0.0
 psycopg2-binary==2.9.6
 PyJWT==2.8.0
+pypng==0.20220715.0
 pyrsistent==0.19.3
 python-dotenv==1.0.0
 pytz==2023.3
 PyYAML==6.0
+qrcode==7.4.2
 requests==2.31.0
 ruamel.yaml==0.17.31
 ruamel.yaml.clib==0.2.7
