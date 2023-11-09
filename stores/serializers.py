@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from . models import Store, StoreInventory
+from . models import Category, ProductImage, Review, Store, StoreProduct
 
 # Store serializer
 class StoreSerializers(serializers.ModelSerializer):
@@ -26,37 +26,43 @@ class MyStoreSerializers(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['owner', 'balance']
 
+# product image serializer
+class ProductImageSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['image']
 
 # Store inventory list serializer
-class StoreInventorySerializers(serializers.ModelSerializer):
+class StoreProductSerializers(serializers.ModelSerializer):
+    images = ProductImageSerializers(many=True, read_only=True)
     class Meta:
-        model = StoreInventory
+        model = StoreProduct
         fields = "__all__"
-        extra_kwargs = {
-            'product': {'help_text': 'Product ID'},
-            # Add other fields with their descriptions
-        }
 
 # Store inventory list serializer
-class ViewStoreInventorySerializers(serializers.ModelSerializer):
+class ViewStoreProductSerializers(serializers.ModelSerializer):
+    images = ProductImageSerializers(many=True, read_only=True)
     class Meta:
-        model = StoreInventory
-        fields = ["id", "product", "retail_price", "stock_qty"]
+        model = StoreProduct
+        exclude = ["store", "cost_price", "created_at", "updated_at"]
         depth = 1
 
-# New Store inventory serializer
-class NewStoreInventorySerializers(serializers.ModelSerializer):
+# my Store Pproduc
+class MyStoreProductSerializers(serializers.ModelSerializer):
     class Meta:
-        model = StoreInventory
-        fields = "__all__"
-        extra_kwargs = {
-            'product': {'help_text': 'Product ID'},
-            # Add other fields with their descriptions
-        }
-
-
-class MyStoreInventorySerializers(serializers.ModelSerializer):
-    class Meta:
-        model = StoreInventory
+        model = StoreProduct
         fields = '__all__'
-        read_only_fields = ['store', 'product']
+        read_only_fields = ['store']
+
+# category list serializer
+class CategorySerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'store', 'slug', 'name', 'short_description']
+        # read_only_fields = ['store']
+
+# product review serializer
+class ReviewListSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'rating', 'comment']

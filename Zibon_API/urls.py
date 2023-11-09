@@ -44,7 +44,7 @@ urlpatterns = [
     # apps
     # path('user/', include('accounts.urls')),
     path('api/auth/', include('accounts.urls')),
-    path('api/products/', include('products.urls')),
+    # path('api/products/', include('products.urls')),
     path('api/orders/', include('order.urls')),
     path('api/shopper/', include('shopper.urls')),
     path('api/stores/', include('stores.urls')),

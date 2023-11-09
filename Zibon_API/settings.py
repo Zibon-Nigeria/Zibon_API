@@ -56,7 +56,7 @@ INSTALLED_APPS = [
 
     # apps
     'accounts',
-    'products',
+    # 'products',
     'order',
     'shopper',
     'stores',

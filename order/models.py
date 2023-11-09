@@ -1,15 +1,17 @@
 from django.db import models
 from accounts.models import User
-from stores.models import Store, StoreInventory
-from django.core.files import File
+from stores.models import StoreProduct
 
 
 # Create your models here.
 class Order(models.Model):
+    ord_type = [('Pickup', 'Pickup'), ('Delivery', 'Delivery')]
+
     customer = models.ForeignKey(User, on_delete=models.CASCADE, blank=True)
     order_number = models.CharField(max_length=50, blank=True, unique=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     qr_code = models.ImageField(upload_to="orders/qr_codes/", blank=True, null=True)
+    order_type = models.CharField(max_length=50, choices=ord_type, default='Delivery')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -32,7 +34,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=True, null=True)
-    item = models.ForeignKey(StoreInventory, on_delete=models.CASCADE)
+    order_item = models.ForeignKey(StoreProduct, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     has_been_picked_up = models.BooleanField(default=False)
@@ -40,16 +42,16 @@ class OrderItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        self.subtotal = self.item.retail_price * self.quantity
+        self.subtotal = self.order_item.retail_price * self.quantity
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{str(self.item.product)} - {self.quantity} = {self.subtotal}"
+        return f"{str(self.order_item.name)} - {self.quantity} = {self.subtotal}"
     
 
 class Delivery(models.Model):
     status = [
-        ('Available', 'Available'),
+        ('Available', 'available'),
         ('Pending', 'Pending'),
         ('In Transit', 'In Transit'),
         ('Delivered', 'Delivered'),
@@ -58,7 +60,7 @@ class Delivery(models.Model):
 
     shopper = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    delivery_address = models.CharField(max_length=50)
+    delivery_address = models.CharField(max_length=50, default="None")
     delivery_status = models.CharField(max_length=50, choices=status, default='Available')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -67,4 +69,4 @@ class Delivery(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.order} to {self.destination_address} - {self.delivery_status}'
+        return f'{self.order} to {self.delivery_address} - {self.delivery_status}'

@@ -5,10 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 
 from order.models import Order, OrderItem
-from order.serializers import OrderItemSerializer, OrderSerializer, UpdateOrderItemSerializer, ViewOrderItemSerializer
-from products.serializers import ProductSerializers, ProductImageSerializers
-from .serializers import MyStoreInventorySerializers, MyStoreSerializers, StoreSerializers, StoreInventorySerializers, ViewStoreInventorySerializers, ViewStoreSerializers
-from .models import Store, StoreInventory
+from order.serializers import ViewOrderItemSerializer
+from .serializers import CategorySerializers, MyStoreProductSerializers, MyStoreSerializers, ProductImageSerializers, StoreProductSerializers, StoreSerializers, ViewStoreProductSerializers, ViewStoreSerializers
+from .models import Category, Store, StoreProduct
 
 # Create your views here.
 
@@ -26,7 +25,7 @@ def stores(request):
         data[-1]['inventory'] = []
 
         for item in inventory:
-            item_serializer = ViewStoreInventorySerializers(item)
+            item_serializer = ViewStoreProductSerializers(item)
             data[-1]['inventory'].append(item_serializer.data)
 
     return Response(data, status=status.HTTP_200_OK)
@@ -60,7 +59,7 @@ def store(request, id):
     data['inventory'] = []
 
     for item in inventory:
-        item_serializer = ViewStoreInventorySerializers(item)
+        item_serializer = ViewStoreProductSerializers(item)
         data['inventory'].append(item_serializer.data)
 
     return Response(data, status=status.HTTP_200_OK)
@@ -69,17 +68,11 @@ def store(request, id):
 # get single store product
 @api_view(['GET'])
 def store_product(request, id):
-    inventory_product = StoreInventory.objects.get(id=id)
+    product = StoreProduct.objects.get(id=id)
+    product_serializer = ViewStoreProductSerializers(product)
+    data = product_serializer.data
 
-    invetory_product_serializer = StoreInventorySerializers(inventory_product)
-    product_image_serializer = ProductImageSerializers(inventory_product.product.product_image.all(), many=True)
-
-    data = {
-        'product': invetory_product_serializer.data,
-        'images': product_image_serializer.data
-    }
-
-    return Response(data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 # my store
@@ -90,11 +83,13 @@ def my_store(request):
     try:
         store = Store.objects.get(owner=request.user)
     except Store.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            "error": "store not found"
+        }, status=status.HTTP_404_NOT_FOUND)
     
     if request.method == 'PUT':
         serializer = MyStoreSerializers(store, data=request.data)
-        if serializer.is_valid() & serializer.has_object_permission(request, store):
+        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -106,15 +101,67 @@ def my_store(request):
         data['inventory'] = []
 
         for i in inventory:
-            invetory_serializer = ViewStoreInventorySerializers(i)
-            
+            invetory_serializer = ViewStoreProductSerializers(i)
             data['inventory'].append(invetory_serializer.data)
         return Response(data, status=status.HTTP_200_OK)
+
+
+# view and add new inventory category in my store
+@swagger_auto_schema(methods=['POST'], request_body=CategorySerializers)
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def my_store_category(request):
+    try:
+        store = Store.objects.get(owner=request.user)
+    except Store.DoesNotExist:
+        return Response({
+            'error': "store not found"
+        },status=status.HTTP_404_NOT_FOUND)
     
+    request.data['store'] = store.id
+    
+    if request.method == 'POST':
+        serializer = CategorySerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    if request.method == 'GET':
+        categories = Category.objects.filter(store=store)
+        serializer = CategorySerializers(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# view and add new inventory category in my store
+@swagger_auto_schema(methods=['PUT'], request_body=CategorySerializers)
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def my_category(request, id):
+    category = Category.objects.filter(store=store)
+
+    if category.store.owner == request.user:
+        if request.method == 'GET':
+            serializer = CategorySerializers(category)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        if request.method == 'PUT':
+            serializer = CategorySerializers(category, data=request.data)
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        
+        if request.method == 'DELETE':
+            category.delete()
+            return Response({
+                "message": "Category deleted"
+            }, status=status.HTTP_202_ACCEPTED)
+    else:
+        return Response({
+            "error": "Unauthorized access"
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
 
 # view and add new inventory in my store
-@swagger_auto_schema(methods=['POST'], request_body=MyStoreInventorySerializers)
-@api_view(['POST', 'GET'])
+@swagger_auto_schema(methods=['POST'], request_body=MyStoreProductSerializers)
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def my_store_inventory(request):
     try:
@@ -124,52 +171,60 @@ def my_store_inventory(request):
             'error': "store not found"
         },status=status.HTTP_404_NOT_FOUND)
     
-    request.data['store'] = store
+    request.data['store'] = store.id
     
     if request.method == 'POST':
-        serializer = StoreInventorySerializers(data=request.data)
+        serializer = StoreProductSerializers(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            product = serializer.save()
+            images = []
+
+            # Process and save images
+            images_data = request.data.getlist('images')  # Assuming 'images' is the field name for the images
+            for image in images_data:
+                image_serializer = ProductImageSerializers(data={'image': image})
+                if image_serializer.is_valid():
+                    image_serializer.save(product=product)
+                    images.append(image_serializer.data['image'])
+                else:
+                    product.delete()  # Delete the product if any image is invalid
+                    return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
+                data = serializer.data
+                data['images'] = images
+            return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    if request.method == "GET":
-        inventory = store.store_inventory.all()
-        
-        store_serializer = ViewStoreSerializers(store)
-        data = store_serializer.data
-        data['inventory'] = []
-
-        for item in inventory:
-            item_serializer = ViewStoreInventorySerializers(item)
-            data['inventory'].append(item_serializer.data)
-        return Response(data, status=status.HTTP_200_OK)
-
 
 # view and edit a product in my store
-@swagger_auto_schema(methods=['PUT'], request_body=MyStoreInventorySerializers)
+@swagger_auto_schema(methods=['PUT'], request_body=MyStoreProductSerializers)
 @api_view(['PUT', 'GET'])
 @permission_classes([IsAuthenticated])
 def my_store_product(request, id):
     try:
         store = Store.objects.get(owner=request.user)
         try:
-            product = StoreInventory.objects.get(id=id, store=store)
-        except StoreInventory.DoesNotExist:
+            product = StoreProduct.objects.get(id=id, store=store)
+        except StoreProduct.DoesNotExist:
             return Response({
                 'error': "inventory product not found"
             },status=status.HTTP_404_NOT_FOUND)
+        
     except Store.DoesNotExist:
         return Response({
             'error': "store not found"
         },status=status.HTTP_404_NOT_FOUND)
     
     if request.method == "GET":
-        serializer = StoreInventorySerializers(product)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = StoreProductSerializers(product).data
+        data['images'] = []
+        for img in product.product_image.all():
+            data['images'].append(ProductImageSerializers(img).data['image'])
+
+        return Response(data, status=status.HTTP_200_OK)
 
     if request.method == "PUT":
-        serializer = MyStoreInventorySerializers(product, data=request.data)
+        serializer = MyStoreProductSerializers(product, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -224,7 +279,7 @@ def single_order(request, id):
 
 
 
-@swagger_auto_schema(methods=['PUT'], request_body=UpdateOrderItemSerializer)
+# @swagger_auto_schema(methods=['PUT'], request_body=UpdateOrderItemSerializer)
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
 def single_order_item(request, id):
