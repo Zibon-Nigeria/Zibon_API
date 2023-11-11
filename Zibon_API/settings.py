@@ -133,13 +133,13 @@ if 'DB_HOSTNAME' in os.environ:
             'PORT': os.environ['PORT'],
         }
     }
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 # set custom user as default user
 AUTH_USER_MODEL = "accounts.User"
