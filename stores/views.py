@@ -25,8 +25,13 @@ def stores(request):
         data[-1]['inventory'] = []
 
         for item in inventory:
-            item_serializer = ViewStoreProductSerializers(item)
-            data[-1]['inventory'].append(item_serializer.data)
+            item_serializer = ViewStoreProductSerializers(item).data
+            item_images = ProductImageSerializers(item.product_image.all(), many=True)
+            item_serializer['images'] = []
+            for x in item_images.data:
+                item_serializer['images'].append(x['image'])
+            
+            data[-1]['inventory'].append(item_serializer)
 
     return Response(data, status=status.HTTP_200_OK)
 

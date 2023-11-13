@@ -42,7 +42,7 @@ class Category(models.Model):
     
 class StoreProduct(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='store_inventory')
-    category = models.ManyToManyField(Category)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=255)
     product_code = models.CharField(max_length=50, blank=True)
     long_description = models.TextField(blank=True, null=True)
