@@ -57,15 +57,20 @@ def new_store(request):
 @api_view(['GET'])
 def store(request, id):
     store = Store.objects.get(id=id)
-    inventory = store.store_inventory.all()
-    
+
     store_serializer = ViewStoreSerializers(store)
+    inventory = store.store_inventory.all()
     data = store_serializer.data
     data['inventory'] = []
 
     for item in inventory:
-        item_serializer = ViewStoreProductSerializers(item)
-        data['inventory'].append(item_serializer.data)
+        item_serializer = ViewStoreProductSerializers(item).data
+        item_images = ProductImageSerializers(item.product_image.all(), many=True)
+        item_serializer['images'] = []
+        for x in item_images.data:
+            item_serializer['images'].append(x['image'])
+        
+        data['inventory'].append(item_serializer)
 
     return Response(data, status=status.HTTP_200_OK)
 
@@ -76,6 +81,11 @@ def store_product(request, id):
     product = StoreProduct.objects.get(id=id)
     product_serializer = ViewStoreProductSerializers(product)
     data = product_serializer.data
+    
+    product_images = ProductImageSerializers(product.product_image.all(), many=True)
+    data['images'] = []
+    for x in product_images.data:
+        data['images'].append(x['image'])
 
     return Response(data, status=status.HTTP_200_OK)
 
@@ -105,9 +115,15 @@ def my_store(request):
         data = store_serializer.data
         data['inventory'] = []
 
-        for i in inventory:
-            invetory_serializer = ViewStoreProductSerializers(i)
-            data['inventory'].append(invetory_serializer.data)
+        for item in inventory:
+            item_serializer = ViewStoreProductSerializers(item).data
+            item_images = ProductImageSerializers(item.product_image.all(), many=True)
+            item_serializer['images'] = []
+            for x in item_images.data:
+                item_serializer['images'].append(x['image'])
+            
+            data['inventory'].append(item_serializer)
+            
         return Response(data, status=status.HTTP_200_OK)
 
 
