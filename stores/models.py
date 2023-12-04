@@ -1,3 +1,4 @@
+from re import T
 from django.db import models
 from django.template.defaultfilters import slugify
 from accounts.models import User
@@ -9,6 +10,8 @@ class Store(models.Model):
     store_name = models.CharField(max_length=50)
     store_address = models.CharField(max_length=200)
     city = models.CharField(max_length=30)
+    longitude = models.CharField(max_length=255, blank=True, null=True)
+    latitube = models.CharField(max_length=255, blank=True, null=True)
     state = models.CharField(max_length=30, blank=True, null=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -107,9 +107,35 @@ def single_order(request, order_number):
             item['']
             data['items'].append(ViewOrderItemSerializer(orderItem).data)
         return Response(data, status=status.HTTP_200_OK)
-        
+
     if request.method == "PUT":
         pass
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def update_order(request):
+    # find order
+    try:
+        order = Order.objects.get(order_number=request.data['order_number'])
+    except Order.DoesNotExist:
+        return Response({
+            "error": "order doesnot exist"
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    order.is_paid = True
+    order.save()
+    
+    data = OrderSerializer(order).data
+    if order.order_type == "Delivery":
+        data['delivery'] = DeliverySerializer(order.delivery).data
+
+    data['items'] = []
+    for orderItem in order.orderitem_set.all():
+        item = ViewOrderItemSerializer(orderItem).data
+        item['']
+        data['items'].append(ViewOrderItemSerializer(orderItem).data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 # single delivery

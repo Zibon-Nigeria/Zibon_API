@@ -5,7 +5,8 @@ from .models import Delivery, Order, OrderItem
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model =  Order
-        fields = ['id', 'order_number', 'order_type', 'customer', 'total', 'qr_code', 'created_at', 'updated_at']
+        fields = ['id', 'order_number', 'order_type', 'customer', 'total', 'qr_code', 'is_paid', 'created_at', 'updated_at']
+        read_only_fields = ['is_paid']
         extra_kwargs = {
             'item': {'help_text': "ID of StoreItem"}
         }

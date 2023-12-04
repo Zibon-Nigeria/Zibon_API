@@ -12,6 +12,7 @@ class Order(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     qr_code = models.ImageField(upload_to="orders/qr_codes/", blank=True, null=True)
     order_type = models.CharField(max_length=50, choices=ord_type, default='Delivery')
+    is_paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
