@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 
 from order.models import Order, OrderItem
-from order.serializers import ViewOrderItemSerializer
+from order.serializers import ViewOrderItemSerializer, ViewOrderSerializer
 from .serializers import CategorySerializers, MyStoreProductSerializers, MyStoreSerializers, ProductImageSerializers, StoreProductSerializers, StoreSerializers, ViewStoreProductSerializers, ViewStoreSerializers
 from .models import Category, Store, StoreProduct
 
@@ -110,7 +110,7 @@ def my_store(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     else:
-        inventory = store.store_inventory.all()
+        inventory = store.store_inventory.all()[:3]
         store_serializer = MyStoreSerializers(store)
         data = store_serializer.data
         data['inventory'] = []
@@ -123,6 +123,27 @@ def my_store(request):
                 item_serializer['images'].append(x['image'])
             
             data['inventory'].append(item_serializer)
+        try:
+            data['orders'] = []
+            # get all the order items that belong to this store
+            order_items = OrderItem.objects.filter(order_item__store=store, has_been_picked_up=False)
+            
+            # create a set of order objects based on order items
+            orderSet = set()
+            orderSet = {item.order for item in order_items}
+
+            for order in orderSet:
+                order_serializer = ViewOrderSerializer(order).data
+                for order_item in order.orderitem_set.all():
+                    order_item_serializer = ViewOrderItemSerializer(order_item).data
+                    order_item_serializer['item'] = ViewStoreProductSerializers(order_item.order_item).data
+                    order_item_serializer['item']['image'] = ProductImageSerializers(order_item.order_item.product_image.first()).data['image']
+
+                    order_serializer['order_items'] = order_item_serializer
+                data['orders'].append(order_serializer)
+            
+        except OrderItem.DoesNotExist:
+            data['orders'] = []
             
         return Response(data, status=status.HTTP_200_OK)
 
@@ -257,18 +278,26 @@ def my_store_product(request, id):
 def all_order_items(request):
     try:
         store = Store.objects.get(owner=request.user)
+
         try:
+            data = []
             # get all the order items that belong to this store
-            order_items = OrderItem.objects.filter(store=store, has_been_picked_up=False)
-            serializers = ViewOrderItemSerializer(order_items, many=True)
+            order_items = OrderItem.objects.filter(order_item__store=store, has_been_picked_up=False)
             
             # create a set of order objects based on order items
-            orderSet = {}
-            for item in serializers.data:
-                orderSet.add(item['order'])
+            orderSet = set()
+            orderSet = {item.order for item in order_items}
 
-            data = list(map(lambda x, y: [y for y in serializers.data if y['order'] == x], orderSet, serializers.data))
-            
+            for order in orderSet:
+                order_serializer = ViewOrderSerializer(order).data
+                for order_item in order.orderitem_set.all():
+                    order_item_serializer = ViewOrderItemSerializer(order_item).data
+                    order_item_serializer['item'] = ViewStoreProductSerializers(order_item.order_item).data
+                    order_item_serializer['item']['image'] = ProductImageSerializers(order_item.order_item.product_image.first()).data['image']
+
+                    order_serializer['order_items'] = order_item_serializer
+                data.append(order_serializer)
+        
             return Response(data, status=status.HTTP_200_OK)
         except OrderItem.DoesNotExist:
             return Response({

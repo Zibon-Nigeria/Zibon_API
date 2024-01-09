@@ -1,4 +1,3 @@
-from re import T
 from django.db import models
 from django.template.defaultfilters import slugify
 from accounts.models import User
@@ -9,6 +8,7 @@ class Store(models.Model):
     owner = models.OneToOneField(User, on_delete=models.CASCADE)
     store_name = models.CharField(max_length=50)
     store_address = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='stores/', blank=True, null=True)
     city = models.CharField(max_length=30)
     longitude = models.CharField(max_length=255, blank=True, null=True)
     latitude = models.CharField(max_length=255, blank=True, null=True)

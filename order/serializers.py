@@ -15,7 +15,8 @@ class OrderSerializer(serializers.ModelSerializer):
 class ViewOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model =  Order
-        fields = '__all__'
+        # fields = '__all__'
+        fields = ['order_number', 'order_type', 'qr_code', 'total', 'is_paid', 'created_at']
         # depth = 1
 
 
@@ -33,9 +34,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class ViewOrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model =  OrderItem
-        fields = '__all__'
-        read_only_fields = ["order", "item", "quantity", "subtotal"]
-        depth = 1
+        fields = ["quantity", "subtotal", "has_been_picked_up"]
+        # read_only_fields = ["order", "item", "quantity", "subtotal"]
+        # depth = 1
 
 
 class PostOrderSerializer(serializers.ModelSerializer):
