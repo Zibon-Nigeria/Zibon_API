@@ -128,18 +128,18 @@ def my_store(request):
             # get all the order items that belong to this store
             order_items = OrderItem.objects.filter(order_item__store=store, has_been_picked_up=False)
             
-            # create a set of order objects based on order items
-            orderSet = set()
-            orderSet = {item.order for item in order_items}
+            orders = {item.order: [] for item in order_items}
+            for item in order_items:
+                orders[item.order].append(item)
 
-            for order in orderSet:
-                order_serializer = ViewOrderSerializer(order).data
-                for order_item in order.orderitem_set.all():
-                    order_item_serializer = ViewOrderItemSerializer(order_item).data
-                    order_item_serializer['item'] = ViewStoreProductSerializers(order_item.order_item).data
-                    order_item_serializer['item']['image'] = ProductImageSerializers(order_item.order_item.product_image.first()).data['image']
+            for key, value in orders.items():
+                order_serializer = ViewOrderSerializer(key).data
+                order_serializer['order_items'] = []
+                for order_item in value:
+                    order_serializer['order_items'].append(ViewOrderItemSerializer(order_item).data)
+                    order_serializer['order_items'][-1]['item'] = (ViewStoreProductSerializers(order_item.order_item).data)
+                    order_serializer['order_items'][-1]['item']['image'] = ProductImageSerializers(order_item.order_item.product_image.first()).data['image']
 
-                    order_serializer['order_items'] = order_item_serializer
                 data['orders'].append(order_serializer)
             
         except OrderItem.DoesNotExist:
@@ -284,18 +284,18 @@ def all_order_items(request):
             # get all the order items that belong to this store
             order_items = OrderItem.objects.filter(order_item__store=store, has_been_picked_up=False)
             
-            # create a set of order objects based on order items
-            orderSet = set()
-            orderSet = {item.order for item in order_items}
+            orders = {item.order: [] for item in order_items}
+            for item in order_items:
+                orders[item.order].append(item)
 
-            for order in orderSet:
-                order_serializer = ViewOrderSerializer(order).data
-                for order_item in order.orderitem_set.all():
-                    order_item_serializer = ViewOrderItemSerializer(order_item).data
-                    order_item_serializer['item'] = ViewStoreProductSerializers(order_item.order_item).data
-                    order_item_serializer['item']['image'] = ProductImageSerializers(order_item.order_item.product_image.first()).data['image']
+            for key, value in orders.items():
+                order_serializer = ViewOrderSerializer(key).data
+                order_serializer['order_items'] = []
+                for order_item in value:
+                    order_serializer['order_items'].append(ViewOrderItemSerializer(order_item).data)
+                    order_serializer['order_items'][-1]['item'] = (ViewStoreProductSerializers(order_item.order_item).data)
+                    order_serializer['order_items'][-1]['item']['image'] = ProductImageSerializers(order_item.order_item.product_image.first()).data['image']
 
-                    order_serializer['order_items'] = order_item_serializer
                 data.append(order_serializer)
         
             return Response(data, status=status.HTTP_200_OK)
