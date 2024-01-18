@@ -17,7 +17,7 @@ class StoreSerializers(serializers.ModelSerializer):
 class ViewStoreSerializers(serializers.ModelSerializer):
     class Meta:
         model = Store
-        fields = ["id", "store_name", "store_address", "image", "city", "state", "longitude", "latitude"]
+        fields = ["id", "store_name", "store_address", "image", "phone", "longitude", "latitude"]
 
 
 class MyStoreSerializers(serializers.ModelSerializer):    
