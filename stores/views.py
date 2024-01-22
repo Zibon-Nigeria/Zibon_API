@@ -336,7 +336,6 @@ def single_order(request, id):
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-
 # @swagger_auto_schema(methods=['PUT'], request_body=UpdateOrderItemSerializer)
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
