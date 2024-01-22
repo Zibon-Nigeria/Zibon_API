@@ -7,7 +7,7 @@ from . models import Category, Product, ProductImage, Review
 class ProductSerializers(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('id', 'name', 'category', 'product_code', 'long_description', 'image')
+        fields = ('id', 'name', 'category', 'product_code', 'long_description', 'short_description', 'image')
 
 # product image serializer
 class ProductImageSerializers(serializers.ModelSerializer):

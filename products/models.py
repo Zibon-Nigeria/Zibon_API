@@ -28,6 +28,7 @@ class Product(models.Model):
     category = models.ManyToManyField(Category)
     name = models.CharField(max_length=255)
     product_code = models.CharField(max_length=50)
+    short_description = models.TextField(blank=True, null=True)
     long_description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to="products/")
     created_at = models.DateTimeField(auto_now_add=True)

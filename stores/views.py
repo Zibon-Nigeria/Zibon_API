@@ -1,8 +1,9 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from order.models import Order, OrderItem
 from order.serializers import ViewOrderItemSerializer, ViewOrderSerializer
@@ -40,7 +41,9 @@ def stores(request):
 @swagger_auto_schema(method='POST', request_body=StoreSerializers)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([JSONParser, MultiPartParser, FormParser])
 def new_store(request):
+    request.data._mutable = True
     data = request.data
     data['owner'] = request.user.id
 
@@ -203,7 +206,7 @@ def my_category(request, id):
 
 # view and add new inventory in my store
 @swagger_auto_schema(methods=['POST'], request_body=MyStoreProductSerializers)
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def my_store_inventory(request):
     try:
@@ -213,6 +216,7 @@ def my_store_inventory(request):
             'error': "store not found"
         },status=status.HTTP_404_NOT_FOUND)
     
+    request.data._mutable = True
     request.data['store'] = store.id
     
     if request.method == 'POST':
@@ -220,6 +224,7 @@ def my_store_inventory(request):
         if serializer.is_valid():
             product = serializer.save()
             images = []
+            data = serializer.data
 
             # Process and save images
             images_data = request.data.getlist('images')  # Assuming 'images' is the field name for the images
@@ -232,11 +237,14 @@ def my_store_inventory(request):
                     product.delete()  # Delete the product if any image is invalid
                     return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 
-                data = serializer.data
-                data['images'] = images
+            data['images'] = images
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    else:
+        inventory = StoreProduct.objects.filter(store=store)
+        serializer = StoreProductSerializers(inventory, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 # view and edit a product in my store
 @swagger_auto_schema(methods=['PUT'], request_body=MyStoreProductSerializers)
