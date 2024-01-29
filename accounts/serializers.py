@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from stores.models import Store
 from .models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -7,13 +9,17 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-
         # Add custom claims
         token['email'] = user.email
         token['fullname'] = user.fullname
         token['is_active'] = user.is_active
-        # ...
         return token
+    
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # Add your extra responses here
+        data['has_store'] = Store.objects.filter(owner=self.user).exists()
+        return data
     
     
 # user serializer

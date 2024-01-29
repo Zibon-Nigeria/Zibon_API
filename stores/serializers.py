@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from . models import Category, ProductImage, Review, Store, StoreProduct
 
 # Store serializer

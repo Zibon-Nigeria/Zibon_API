@@ -48,6 +48,7 @@ class StoreProduct(models.Model):
     name = models.CharField(max_length=255)
     product_code = models.CharField(max_length=50, blank=True)
     long_description = models.TextField(blank=True, null=True)
+    short_description = models.TextField(blank=True, null=True)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     retail_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     stock_qty = models.PositiveIntegerField(default=1)

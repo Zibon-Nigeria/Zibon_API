@@ -43,11 +43,11 @@ def stores(request):
 @permission_classes([IsAuthenticated])
 @parser_classes([JSONParser, MultiPartParser, FormParser])
 def new_store(request):
-    request.data._mutable = True
-    data = request.data
-    data['owner'] = request.user.id
 
     if request.method == 'POST':
+        request.data._mutable = True
+        data = request.data
+        data['owner'] = request.user.id
         serializer = StoreSerializers(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -139,10 +139,12 @@ def my_store(request):
                 order_serializer = ViewOrderSerializer(key).data
                 order_serializer['order_items'] = []
                 for order_item in value:
-                    order_serializer['order_items'].append(ViewOrderItemSerializer(order_item).data)
-                    order_serializer['order_items'][-1]['item'] = (ViewStoreProductSerializers(order_item.order_item).data)
-                    order_serializer['order_items'][-1]['item']['image'] = ProductImageSerializers(order_item.order_item.product_image.first()).data['image']
-
+                    order_serializer['order_items'].append({
+                        "item": order_item.order_item.name,
+                        "retail_price": order_item.order_item.retail_price,
+                        "quantity": order_item.quantity,
+                        "subtotal": order_item.subtotal,
+                    })
                 data['orders'].append(order_serializer)
             
         except OrderItem.DoesNotExist:
@@ -216,10 +218,10 @@ def my_store_inventory(request):
             'error': "store not found"
         },status=status.HTTP_404_NOT_FOUND)
     
-    request.data._mutable = True
-    request.data['store'] = store.id
-    
     if request.method == 'POST':
+        request.data._mutable = True
+        request.data['store'] = store.id
+
         serializer = StoreProductSerializers(data=request.data)
         if serializer.is_valid():
             product = serializer.save()
@@ -300,10 +302,12 @@ def all_order_items(request):
                 order_serializer = ViewOrderSerializer(key).data
                 order_serializer['order_items'] = []
                 for order_item in value:
-                    order_serializer['order_items'].append(ViewOrderItemSerializer(order_item).data)
-                    order_serializer['order_items'][-1]['item'] = (ViewStoreProductSerializers(order_item.order_item).data)
-                    order_serializer['order_items'][-1]['item']['image'] = ProductImageSerializers(order_item.order_item.product_image.first()).data['image']
-
+                    order_serializer['order_items'].append({
+                        "item": order_item.order_item.name,
+                        "retail_price": order_item.order_item.retail_price,
+                        "quantity": order_item.quantity,
+                        "subtotal": order_item.subtotal,
+                    })
                 data.append(order_serializer)
         
             return Response(data, status=status.HTTP_200_OK)
