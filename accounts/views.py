@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 
 from accounts.serializers import MyTokenObtainPairSerializer, UserSerializer, ViewUserSerializer
+from stores.models import Store
 
 @swagger_auto_schema(method='POST', request_body=UserSerializer)
 @api_view(['POST'])
@@ -17,9 +18,10 @@ def register_user(request):
         user_data = ViewUserSerializer(user)
     
         return Response({
-                "user": user_data.data,
+                # "user": user_data.data,
                 'access': str(token.access_token),
-                'refresh': str(token)
+                'refresh': str(token),
+                'has_store': Store.objects.filter(owner=user).exists()
             }, status=status.HTTP_201_CREATED)
     return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

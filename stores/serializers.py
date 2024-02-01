@@ -34,6 +34,11 @@ class ProductImageSerializers(serializers.ModelSerializer):
 # Store inventory list serializer
 class StoreProductSerializers(serializers.ModelSerializer):
     images = ProductImageSerializers(many=True, read_only=True)
+    in_stock = serializers.SerializerMethodField()
+
+    def get_in_stock(self, instance):
+        return  instance.stock_qty > 0
+    
     class Meta:
         model = StoreProduct
         fields = "__all__"
