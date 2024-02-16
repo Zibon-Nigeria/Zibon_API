@@ -269,10 +269,6 @@ def my_store_product(request, id):
     
     if request.method == "GET":
         data = StoreProductSerializers(product).data
-        data['images'] = []
-        for img in product.product_image.all():
-            data['images'].append(ProductImageSerializers(img).data['image'])
-
         return Response(data, status=status.HTTP_200_OK)
 
     if request.method == "PUT":

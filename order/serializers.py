@@ -15,9 +15,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class ViewOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model =  Order
-        # fields = '__all__'
         fields = ['order_number', 'order_type', 'qr_code', 'total', 'is_paid', 'created_at']
-        # depth = 1
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -32,11 +30,14 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class ViewOrderItemSerializer(serializers.ModelSerializer):
+    order_item = serializers.SerializerMethodField()
+
+    def get_order_item(self, instance):
+        return instance.order_item.name
+    
     class Meta:
         model =  OrderItem
-        fields = ["quantity", "subtotal", "has_been_picked_up"]
-        # read_only_fields = ["order", "item", "quantity", "subtotal"]
-        # depth = 1
+        fields = ["order_item", "quantity", "subtotal", "has_been_picked_up"]
 
 
 class PostOrderSerializer(serializers.ModelSerializer):

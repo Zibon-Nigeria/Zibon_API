@@ -12,76 +12,97 @@ from django.core.files import File
 from order.serializers import DeliverySerializer, OrderItemSerializer, PostOrderSerializer, OrderSerializer, ViewOrderItemSerializer, ViewOrderSerializer
 
 # Create your views here.
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_orders(request):
+    # get all orders that belong to the loggedin customer
+    orders = Order.objects.filter(customer=request.user)
+
+    data = []
+    for order in orders:
+        order_serializer = OrderSerializer(order).data
+        items = ViewOrderItemSerializer(order.orderitem_set.all(), many=True).data
+        order_serializer['items'] = items
+        data.append(order_serializer)
+
+    return Response(data, status=status.HTTP_200_OK)
+       
+
 @swagger_auto_schema(method='POST', request_body=PostOrderSerializer)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def make_order(request):
-    request.data['customer'] = request.user.id
-    items = request.data['items']
+    if request.method == 'POST':
+        request.data['customer'] = request.user.id
+        items = request.data['items']
 
-    # create order object
-    order_serializer = OrderSerializer(data=request.data)
-    if order_serializer.is_valid():
+        # create order object
+        order_serializer = OrderSerializer(data=request.data)
+        if order_serializer.is_valid():
 
-        data = order_serializer.validated_data
+            data = order_serializer.validated_data
 
-        # Generate a QR code for order
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(data)
-        qr.make(fit=True)
+            # Generate a QR code for order
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(data)
+            qr.make(fit=True)
 
-        img = qr.make_image(fill_color="black", back_color="white")
+            img = qr.make_image(fill_color="black", back_color="white")
 
-        # Save the QR code image
-        buffer = BytesIO()
-        img.save(buffer, format='PNG')
-        qr_code_image = File(buffer, name=f'{data}.png')
+            # Save the QR code image
+            buffer = BytesIO()
+            img.save(buffer, format='PNG')
+            qr_code_image = File(buffer, name=f'{data}.png')
 
-        # Save the data and QR code image in the database
-        order = order_serializer.save(qr_code=qr_code_image)
+            # Save the data and QR code image in the database
+            order = order_serializer.save(qr_code=qr_code_image)
 
-        order_total = 0
-        ord_items = []
+            order_total = 0
+            ord_items = []
 
-        # create order_items for order
-        for item in items:
-            item['order'] = order.id
-            print(item)
-            item_serializier = OrderItemSerializer(data=item)
-            if item_serializier.is_valid():
-                order_item = item_serializier.save()
+            # create order_items for order
+            for item in items:
+                item['order'] = order.id
+                print(item)
+                item_serializier = OrderItemSerializer(data=item)
+                if item_serializier.is_valid():
+                    order_item = item_serializier.save()
 
-                ord_items.append(item_serializier.data) # add item to list of order items
-                order_total += order_item.subtotal  # add order item subtotal to order total
-        
-        # create delivery
-        if order.order_type == "Delivery":
-            delivery_serializer = DeliverySerializer(data={
-                    "order": order.id,
-                    "delivery_address": request.data['delivery_address']
-                })
+                    ord_items.append(item_serializier.data) # add item to list of order items
+                    order_total += order_item.subtotal  # add order item subtotal to order total
             
-            if delivery_serializer.is_valid():
-                delivery_serializer.save()
+            # create delivery
+            if order.order_type == "Delivery":
+                delivery_serializer = DeliverySerializer(data={
+                        "order": order.id,
+                        "delivery_address": request.data['delivery_address']
+                    })
+                
+                if delivery_serializer.is_valid():
+                    delivery_serializer.save()
 
-        # update order total    
-        order.total = order_total
-        order.save()
+            # update order total    
+            order.total = order_total
+            order.save()
 
-        data = ViewOrderSerializer(order).data
-        data['items'] = ord_items
-        data['customer'] = {
-            "fullname": request.user.fullname,
-            "phone": request.user.phone,
-            "address": request.user.address,
-        }
+            order_serializer = ViewOrderSerializer(order).data
+            items = ViewOrderItemSerializer(order.orderitem_set.all(), many=True).data
+            order_serializer['items'] = items
+            data.append(order_serializer)
 
-    return Response(data, status=status.HTTP_201_CREATED)
+            order_serializer['customer'] = {
+                "fullname": request.user.fullname,
+                "phone": request.user.phone,
+                "address": request.user.address,
+            }
+
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
 # single order
@@ -97,15 +118,16 @@ def single_order(request, order_number):
         }, status=status.HTTP_404_NOT_FOUND)
     
     if request.method == "GET":
+
+        order_serializer = ViewOrderSerializer(order).data
+        items = ViewOrderItemSerializer(order.orderitem_set.all(), many=True).data
+        order_serializer['items'] = items
+        data.append(order_serializer)
+
         data = OrderSerializer(order).data
         if order.order_type == "Delivery":
-            data['delivery'] = DeliverySerializer(order.delivery).data
-
-        data['items'] = []
-        for orderItem in order.orderitem_set.all():
-            item = ViewOrderItemSerializer(orderItem).data
-            item['']
-            data['items'].append(ViewOrderItemSerializer(orderItem).data)
+            order_serializer['delivery'] = DeliverySerializer(order.delivery).data
+            
         return Response(data, status=status.HTTP_200_OK)
 
     if request.method == "PUT":

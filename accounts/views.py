@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 
 from accounts.serializers import MyTokenObtainPairSerializer, UserSerializer, ViewUserSerializer
+from order.models import OrderItem
+from order.serializers import ViewOrderSerializer
 from stores.models import Store
 
 @swagger_auto_schema(method='POST', request_body=UserSerializer)
@@ -33,7 +35,32 @@ def my_profile(request):
 
     if request.method == 'GET':
         serializer = ViewUserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        data =  serializer.data
+        try:
+            data['orders'] = []
+            # get all the order items that belong to this store
+            order_items = OrderItem.objects.filter(order__customer=user)
+            
+            orders = {item.order: [] for item in order_items}
+            for item in order_items:
+                orders[item.order].append(item)
+
+            for key, value in orders.items():
+                order_serializer = ViewOrderSerializer(key).data
+                order_serializer['order_items'] = []
+                for order_item in value:
+                    order_serializer['order_items'].append({
+                        "item": order_item.order_item.name,
+                        "retail_price": order_item.order_item.retail_price,
+                        "quantity": order_item.quantity,
+                        "subtotal": order_item.subtotal,
+                    })
+                data['orders'].append(order_serializer)
+            
+        except OrderItem.DoesNotExist:
+            data['orders'] = []
+            
+        return Response(data, status=status.HTTP_200_OK)
     
     if request.method == 'PUT':
         serializer = UserSerializer(user, data=request.data)
