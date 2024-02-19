@@ -69,3 +69,32 @@ def my_profile(request):
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_orders(request):
+    user = request.user
+    data =  []
+    try:
+        # get all the order items that belong to this store
+        order_items = OrderItem.objects.filter(order__customer=user)
+        
+        orders = {item.order: [] for item in order_items}
+        for item in order_items:
+            orders[item.order].append(item)
+
+        for key, value in orders.items():
+            order_serializer = ViewOrderSerializer(key).data
+            order_serializer['order_items'] = []
+            for order_item in value:
+                order_serializer['order_items'].append({
+                    "item": order_item.order_item.name,
+                    "retail_price": order_item.order_item.retail_price,
+                    "quantity": order_item.quantity,
+                    "subtotal": order_item.subtotal,
+                })
+            data.append(order_serializer)
+        
+    except OrderItem.DoesNotExist:
+        pass
+    return Response(data, status=status.HTTP_200_OK)

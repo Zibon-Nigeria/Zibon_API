@@ -5,7 +5,10 @@ from stores.models import StoreProduct
 
 # Create your models here.
 class Order(models.Model):
-    ord_type = [('Pickup', 'Pickup'), ('Delivery', 'Delivery')]
+    ord_type = [
+        ('Pickup', 'Pickup'), 
+        ('Delivery', 'Delivery')
+    ]
 
     customer = models.ForeignKey(User, on_delete=models.CASCADE, blank=True)
     order_number = models.CharField(max_length=50, blank=True, unique=True)
@@ -35,7 +38,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=True, null=True)
-    order_item = models.ForeignKey(StoreProduct, on_delete=models.CASCADE)
+    item = models.ForeignKey(StoreProduct, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     has_been_picked_up = models.BooleanField(default=False)
@@ -43,15 +46,15 @@ class OrderItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        self.subtotal = self.order_item.retail_price * self.quantity
+        self.subtotal = self.item.retail_price * self.quantity
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{str(self.order_item.name)} - {self.quantity} = {self.subtotal}"
+        return f"{str(self.item.name)} - {self.quantity} = {self.subtotal}"
     
 
 class Delivery(models.Model):
-    status = [
+    STATUS_OPTIONS = [
         ('Available', 'available'),
         ('Pending', 'Pending'),
         ('In Transit', 'In Transit'),
@@ -62,7 +65,7 @@ class Delivery(models.Model):
     shopper = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     delivery_address = models.CharField(max_length=50, default="None")
-    delivery_status = models.CharField(max_length=50, choices=status, default='Available')
+    delivery_status = models.CharField(max_length=50, choices=STATUS_OPTIONS, default='Available')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

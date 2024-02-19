@@ -1,6 +1,17 @@
 from rest_framework import serializers
 from .models import Delivery, Order, OrderItem
 
+
+
+class ViewOrderItemSerializer(serializers.ModelSerializer):
+    item = serializers.SerializerMethodField()
+    def get_item(self, instance):
+        return instance.item.name
+    
+    class Meta:
+        model =  OrderItem
+        fields = ["item", "quantity", "subtotal", "has_been_picked_up"]
+
 # order serializer
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,9 +24,15 @@ class OrderSerializer(serializers.ModelSerializer):
         # depth = 1
 
 class ViewOrderSerializer(serializers.ModelSerializer):
+    order_items = serializers.SerializerMethodField()
+
+    def get_order_items(self, instance):
+        order_items =  instance.orderitem_set.all()
+        return  ViewOrderItemSerializer(order_items, many=True).data
+    
     class Meta:
         model =  Order
-        fields = ['order_number', 'order_type', 'qr_code', 'total', 'is_paid', 'created_at']
+        fields = ['order_number', 'order_type', 'qr_code', 'order_items', 'total', 'is_paid', 'created_at']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -27,17 +44,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'item': {'help_text': "ID of Store Inventoy item"},
             'quantity': {'help_text': "Quantity bought"},
         }
-
-
-class ViewOrderItemSerializer(serializers.ModelSerializer):
-    order_item = serializers.SerializerMethodField()
-
-    def get_order_item(self, instance):
-        return instance.order_item.name
-    
-    class Meta:
-        model =  OrderItem
-        fields = ["order_item", "quantity", "subtotal", "has_been_picked_up"]
 
 
 class PostOrderSerializer(serializers.ModelSerializer):
@@ -52,6 +58,12 @@ class DeliverySerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
         fields = '__all__'
+
+
+class ViewDeliverySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Delivery
+        fields = ['shopper', 'delivery_address', 'delivery_status']
 
 
 class RequestDeliverySerializer(serializers.ModelSerializer):

@@ -9,7 +9,7 @@ import qrcode
 from io import BytesIO
 from django.core.files import File
 
-from order.serializers import DeliverySerializer, OrderItemSerializer, PostOrderSerializer, OrderSerializer, ViewOrderItemSerializer, ViewOrderSerializer
+from order.serializers import DeliverySerializer, OrderItemSerializer, PostOrderSerializer, OrderSerializer, ViewDeliverySerializer, ViewOrderItemSerializer, ViewOrderSerializer
 
 # Create your views here.
 
@@ -35,7 +35,7 @@ def my_orders(request):
 def make_order(request):
     if request.method == 'POST':
         request.data['customer'] = request.user.id
-        items = request.data['items']
+        order_items = request.data['order_items']
 
         # create order object
         order_serializer = OrderSerializer(data=request.data)
@@ -67,7 +67,7 @@ def make_order(request):
             ord_items = []
 
             # create order_items for order
-            for item in items:
+            for item in order_items:
                 item['order'] = order.id
                 print(item)
                 item_serializier = OrderItemSerializer(data=item)
@@ -76,7 +76,13 @@ def make_order(request):
 
                     ord_items.append(item_serializier.data) # add item to list of order items
                     order_total += order_item.subtotal  # add order item subtotal to order total
-            
+
+            # update order total    
+            order.total = order_total
+            order.save()
+
+            order_serializer = ViewOrderSerializer(order).data
+
             # create delivery
             if order.order_type == "Delivery":
                 delivery_serializer = DeliverySerializer(data={
@@ -85,24 +91,15 @@ def make_order(request):
                     })
                 
                 if delivery_serializer.is_valid():
-                    delivery_serializer.save()
-
-            # update order total    
-            order.total = order_total
-            order.save()
-
-            order_serializer = ViewOrderSerializer(order).data
-            items = ViewOrderItemSerializer(order.orderitem_set.all(), many=True).data
-            order_serializer['items'] = items
-            data.append(order_serializer)
+                    delivery = delivery_serializer.save()
+                    order_serializer['delivery_details'] = ViewDeliverySerializer(delivery).data
 
             order_serializer['customer'] = {
                 "fullname": request.user.fullname,
-                "phone": request.user.phone,
-                "address": request.user.address,
+                "phone": request.user.phone
             }
 
-        return Response(data, status=status.HTTP_201_CREATED)
+        return Response(order_serializer, status=status.HTTP_201_CREATED)
 
 
 # single order
@@ -136,21 +133,36 @@ def single_order(request, order_number):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def update_order(request):
+def set_paid(request, order_number):
     # find order
     try:
-        order = Order.objects.get(order_number=request.data['order_number'])
+        order = Order.objects.get(order_number=order_number)
     except Order.DoesNotExist:
         return Response({
-            "error": "order doesnot exist"
+            "error": "order does not exist"
         }, status=status.HTTP_404_NOT_FOUND)
     
     order.is_paid = True
     order.save()
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def update_order(request, order_number):
+    # find order
+    try:
+        order = Order.objects.get(order_number=order_number)
+    except Order.DoesNotExist:
+        return Response({
+            "error": "order does not exist"
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # order.is_paid = True
+    # order.save()
     
     data = OrderSerializer(order).data
     if order.order_type == "Delivery":
-        data['delivery'] = DeliverySerializer(order.delivery).data
+        data['delivery'] = ViewDeliverySerializer(order.delivery).data
 
     data['items'] = []
     for orderItem in order.orderitem_set.all():
