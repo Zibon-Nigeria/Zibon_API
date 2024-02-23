@@ -129,7 +129,7 @@ def my_store(request):
         try:
             data['orders'] = []
             # get all the order items that belong to this store
-            order_items = OrderItem.objects.filter(order_item__store=store, has_been_picked_up=False)
+            order_items = OrderItem.objects.filter(item__store=store, has_been_picked_up=False)
             
             orders = {item.order: [] for item in order_items}
             for item in order_items:
@@ -140,8 +140,8 @@ def my_store(request):
                 order_serializer['order_items'] = []
                 for order_item in value:
                     order_serializer['order_items'].append({
-                        "item": order_item.order_item.name,
-                        "retail_price": order_item.order_item.retail_price,
+                        "item": order_item.item.name,
+                        "retail_price": order_item.item.retail_price,
                         "quantity": order_item.quantity,
                         "subtotal": order_item.subtotal,
                     })
@@ -288,7 +288,7 @@ def all_order_items(request):
         try:
             data = []
             # get all the order items that belong to this store
-            order_items = OrderItem.objects.filter(order_item__store=store, has_been_picked_up=False)
+            order_items = OrderItem.objects.filter(item__store=store, has_been_picked_up=False)
             
             orders = {item.order: [] for item in order_items}
             for item in order_items:
@@ -299,8 +299,8 @@ def all_order_items(request):
                 order_serializer['order_items'] = []
                 for order_item in value:
                     order_serializer['order_items'].append({
-                        "item": order_item.order_item.name,
-                        "retail_price": order_item.order_item.retail_price,
+                        "item": order_item.item.name,
+                        "retail_price": order_item.item.retail_price,
                         "quantity": order_item.quantity,
                         "subtotal": order_item.subtotal,
                     })

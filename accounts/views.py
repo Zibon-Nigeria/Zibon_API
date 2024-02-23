@@ -50,8 +50,8 @@ def my_profile(request):
                 order_serializer['order_items'] = []
                 for order_item in value:
                     order_serializer['order_items'].append({
-                        "item": order_item.order_item.name,
-                        "retail_price": order_item.order_item.retail_price,
+                        "item": order_item.item.name,
+                        "retail_price": order_item.item.retail_price,
                         "quantity": order_item.quantity,
                         "subtotal": order_item.subtotal,
                     })
@@ -88,8 +88,8 @@ def my_orders(request):
             order_serializer['order_items'] = []
             for order_item in value:
                 order_serializer['order_items'].append({
-                    "item": order_item.order_item.name,
-                    "retail_price": order_item.order_item.retail_price,
+                    "item": order_item.item.name,
+                    "retail_price": order_item.item.retail_price,
                     "quantity": order_item.quantity,
                     "subtotal": order_item.subtotal,
                 })
