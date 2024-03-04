@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated  
 from drf_yasg.utils import swagger_auto_schema
+from accounts.models import User
 
 from accounts.serializers import MyTokenObtainPairSerializer, UserSerializer, ViewUserSerializer
 from order.models import OrderItem
@@ -28,6 +29,7 @@ def register_user(request):
     return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(method='PUT', request_body=ViewUserSerializer)
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
 def my_profile(request):
@@ -98,3 +100,10 @@ def my_orders(request):
     except OrderItem.DoesNotExist:
         pass
     return Response(data, status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_account(request):
+    user = User.objects.get(email=request.user.email)
+    user.delete()
+    return Response("Account deleted successfully", status=status.HTTP_204_NO_CONTENT)

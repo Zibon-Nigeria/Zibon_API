@@ -57,3 +57,4 @@ class ViewUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'fullname', 'phone', 'address', 'city', 'state', 'created_at']
+        read_only_fields = ['id', 'email', 'created_at']
