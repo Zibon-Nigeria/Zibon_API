@@ -1,8 +1,9 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated  
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from accounts.models import User
 
 from accounts.serializers import MyTokenObtainPairSerializer, UserSerializer, ViewUserSerializer
@@ -12,6 +13,7 @@ from stores.models import Store
 
 @swagger_auto_schema(method='POST', request_body=UserSerializer)
 @api_view(['POST'])
+@parser_classes([JSONParser, MultiPartParser, FormParser])
 def register_user(request):
     user_serializer = UserSerializer(data=request.data)
     if user_serializer.is_valid(raise_exception=True):
@@ -32,6 +34,7 @@ def register_user(request):
 @swagger_auto_schema(method='PUT', request_body=ViewUserSerializer)
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
+@parser_classes([JSONParser, MultiPartParser, FormParser])
 def my_profile(request):
     user = request.user
 
