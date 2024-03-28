@@ -42,9 +42,9 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create(
                     email=validated_data['email'],
                     fullname=validated_data['fullname'],
-                    phone=validated_data['phone'],
-                    address=validated_data['address'],
-                    account_type=validated_data['account_type'],
+                    # phone=phone,
+                    # address=address,
+                    # account_type=validated_data['account_type'],
                 )
     
         user.set_password(validated_data['password'])
